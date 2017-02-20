@@ -15,6 +15,7 @@ library(randomForest)
 library(lubridate)
 library(stringr)
 library(plotly)
+library(caret)
 
 # IMPORT DATA
 train <- read.csv("/Users/JakeMoody/Dropbox/GitHub Projects/data/airbnb/train_users_2.csv")
@@ -55,6 +56,8 @@ train$timestamp_first_active <- as.Date(as.character(train$timestamp_first_activ
 
 # Fix age values
 train <- train[train$age <= 100,] # only ages less than 100
+
+train <- train[!is.na(train$country_destination),] # quick hack to remove NAs
 
 ###### CREATE DUMMY VARIABLES ###### 
 # Time between events
@@ -102,7 +105,7 @@ test$total_time_to_booking <- as.numeric(test$date_first_booking - test$timestam
 predicted_age <- rpart(age ~ signup_app + first_device_type + first_browser,  data = test[!is.na(test$age),], method = "anova")
 test$age[is.na(test$age)] <- predict(predicted_age, test[is.na(test$age),])
 
-
+test<- test[!is.na(test$id),] # quick hack to remove NAs
 
 
 ## APPLY PREDICTION DECISION TREE
@@ -120,6 +123,20 @@ class(train$language)
 class(train$gender)
 class(train$country_destination)
 # RANDOM FOREST 
-my_forest <- randomForest(country_destination ~ age + language, data = train, importance = TRUE, ntree = 1000)
+set.seed(111)
+my_forest <- randomForest(as.factor(country_destination) ~ age + gender, data = train, importance = TRUE, ntree = 1000)
+
+my_prediction <- predict(my_forest, test)
+
+## fix error
+unique(train$language)
+unique(test$language)
+
+unique(train$gender)
+unique(test$gender)
 
 
+my_solution <- data.frame(id = test$id, country = my_prediction)
+
+write.csv(my_solution, file = "my_solution.csv", row.names = FALSE)
+str(train)
