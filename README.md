@@ -1,2 +1,2 @@
 # airbnb-kaggle-machine-learning
-Exploratory data analysis for Aribnb Kaggle competition (Work in Progress)
+Exploratory data analysis for Airbnb Kaggle competition (Work in Progress)
